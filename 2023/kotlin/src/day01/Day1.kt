@@ -1,6 +1,4 @@
-package src
 
-import java.io.File
 
 /*
 --- Day 1: Trebuchet?! ---
@@ -38,8 +36,6 @@ fun main() {
     day1partA(inputA)
     day1partB(inputB)
 }
-
-fun readFileAsLinesUsingUseLines(fileName: String): List<String> = File(fileName).useLines { it.toList() }
 
 fun day1partA(input: List<String>) {
     println(input)
