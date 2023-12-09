@@ -52,7 +52,7 @@ fun day1partA(input: List<String>) {
     val calibrationValues = numbers.map { number -> numberToCalibration(number) }
     println(calibrationValues)
 
-    val result = calibrationValues.sum();
+    val result = calibrationValues.sum()
     println(result)
 }
 
@@ -74,7 +74,7 @@ fun day1partB(input: List<String>) {
     val calibrationValues = numbers.map { number -> numberToCalibration(number) }
     println(calibrationValues)
 
-    val result = calibrationValues.sum();
+    val result = calibrationValues.sum()
     println(result)
 }
 
