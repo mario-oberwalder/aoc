@@ -1,34 +1,36 @@
 package src
 
-import literalToDigit
-import numberToCalibration
 import readFileAsLinesUsingUseLines
 
+
 /*
---- Day 1: Trebuchet?! ---
+--- Day 2: Cube Conundrum ---
 
-Something is wrong with global snow production, and you've been selected to take a look. The Elves have even given you a map; on it, they've used stars to mark the top fifty locations that are likely to be having problems.
+You're launched high into the atmosphere! The apex of your trajectory just barely reaches the surface of a large island floating in the sky. You gently land in a fluffy pile of leaves. It's quite cold, but you don't see much snow. An Elf runs over to greet you.
 
-You've been doing this long enough to know that to restore snow operations, you need to check all fifty stars by December 25th.
+The Elf explains that you've arrived at Snow Island and apologizes for the lack of snow. He'll be happy to explain the situation, but it's a bit of a walk, so you have some time. They don't get many visitors up here; would you like to play a game in the meantime?
 
-Collect stars by solving puzzles. Two puzzles will be made available on each day in the Advent calendar; the second puzzle is unlocked when you complete the first. Each puzzle grants one star. Good luck!
+As you walk, the Elf shows you a small bag and some cubes which are either red, green, or blue. Each time you play this game, he will hide a secret number of cubes of each color in the bag, and your goal is to figure out information about the number of cubes.
 
-You try to ask why they can't just use a weather machine ("not powerful enough") and where they're even sending you ("the sky") and why your map looks mostly blank ("you sure ask a lot of questions") and hang on did you just say the sky ("of course, where do you think snow comes from") when you realize that the Elves are already loading you into a trebuchet ("please hold still, we need to strap you in").
+To get information, once a bag has been loaded with cubes, the Elf will reach into the bag, grab a handful of random cubes, show them to you, and then put them back in the bag. He'll do this a few times per game.
 
-As they're making the final adjustments, they discover that their calibration document (your puzzle input) has been amended by a very young Elf who was apparently just excited to show off her art skills. Consequently, the Elves are having trouble reading the values on the document.
+You play several games and record the information from each game (your puzzle input). Each game is listed with its ID number (like the 11 in Game 11: ...) followed by a semicolon-separated list of subsets of cubes that were revealed from the bag (like 3 red, 5 green, 4 blue).
 
-The newly-improved calibration document consists of lines of text; each line originally contained a specific calibration value that the Elves now need to recover. On each line, the calibration value can be found by combining the first digit and the last digit (in that order) to form a single two-digit number.
+For example, the record of a few games might look like this:
 
-For example:
+Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
+Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue
+Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red
+Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red
+Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green
 
-1abc2
-pqr3stu8vwx
-a1b2c3d4e5f
-treb7uchet
+In game 1, three sets of cubes are revealed from the bag (and then put back again). The first set is 3 blue cubes and 4 red cubes; the second set is 1 red cube, 2 green cubes, and 6 blue cubes; the third set is only 2 green cubes.
 
-In this example, the calibration values of these four lines are 12, 38, 15, and 77. Adding these together produces 142.
+The Elf would first like to know which games would have been possible if the bag contained only 12 red cubes, 13 green cubes, and 14 blue cubes?
 
-Consider your entire calibration document. What is the sum of all of the calibration values?
+In the example above, games 1, 2, and 5 would have been possible if the bag had been loaded with that configuration. However, game 3 would have been impossible because at one point the Elf showed you 20 red cubes at once; similarly, game 4 would also have been impossible because the Elf showed you 15 blue cubes at once. If you add up the IDs of the games that would have been possible, you get 8.
+
+Determine which games would have been possible if the bag had been loaded with only 12 red cubes, 13 green cubes, and 14 blue cubes. What is the sum of the IDs of those games?
 */
 
 fun main() {
@@ -47,36 +49,106 @@ fun main() {
 fun day2partA(input: List<String>) {
     println(input)
 
-    val numbers = input
-        .map { characters -> characters.filter { it.isDigit() } }
-        .filter { string -> string.isNotEmpty() }
-    println(numbers)
+    var games: List<Game>
+    games = input.map { string ->
+        Game.Builder()
+            .gameNumber(gameNumberFromLine(string))
+            .cubeSets(cubeSetsFromLine(string))
+            .build()
+    }
 
-    val calibrationValues = numbers.map { number -> numberToCalibration(number) }
-    println(calibrationValues)
+    var limit = Triple(12,13,14)
+    
+    var result = games.map{game -> gameValue(game,limit) }
+result.forEach { println(it) }
 
-    val result = calibrationValues.sum()
-    println(result)
+    println(result.sum())
+
 }
 
 fun day2partB(input: List<String>) {
     println(input)
 
-    var lines = input
-    println(lines)
+    var games: List<Game>
+    games = input.map { string ->
+        Game.Builder()
+            .gameNumber(gameNumberFromLine(string))
+            .cubeSets(cubeSetsFromLine(string))
+            .build()
+    }
 
-    lines = lines
-        .map { line -> literalToDigit(line) }
-    println(lines)
+    var result = games.map{game -> gameValueByCubePower(game) }
+    result.forEach { println(it) }
 
-    val numbers = lines
-        .map { characters -> characters.filter { it.isDigit() } }
-        .filter { string -> string.isNotEmpty() }
-    println(numbers)
+    println(result.sum())
 
-    val calibrationValues = numbers.map { number -> numberToCalibration(number) }
-    println(calibrationValues)
+}
 
-    val result = calibrationValues.sum()
-    println(result)
+fun gameValueByCubePower(game: Game): Int {
+    var reds = game.cubeSets?.map{it.first}?.toList()
+    var greens = game.cubeSets?.map{it.second}?.toList()
+    var blues = game.cubeSets?.map{it.third}?.toList()
+
+    return (reds?.max() ?: 1) * (greens?.max() ?: 1) * (blues?.max() ?: 1)
+}
+
+fun gameValue(game: Game, limit: Triple<Int, Int, Int>) : Int {
+ var withinLimit = true
+    game.cubeSets?.forEach { if (it.first > limit.first) {withinLimit = false }
+        if (it.second > limit.second) {withinLimit = false }
+        if (it.third > limit.third) {withinLimit = false }
+    }
+
+    if (withinLimit) {
+        return game.gameNumber!!
+    }
+       return 0
+}
+
+fun cubeSetsFromLine(input: String): List<Triple<Int, Int, Int>> {
+    var rawSets = input.substringAfter(':').split(';')
+    return rawSets.map { line -> setRgbFromLine(line) }
+}
+
+fun setRgbFromLine(line: String): Triple<Int, Int, Int> {
+    var red = 0
+    var green = 0
+    var blue = 0
+    var rgbCompnents = line.split(',')
+
+    for (element in rgbCompnents) {
+        if (element.contains("red")) {
+            red = element.replace("red", "").removeSurrounding(" ").toInt()
+        }
+        if (element.contains("green")) {
+            green = element.replace("green", "").removeSurrounding(" ").toInt()
+        }
+        if (element.contains("blue")) {
+            blue = element.replace("blue", "").removeSurrounding(" ").toInt()
+        }
+    }
+
+    return Triple(red, green, blue)
+}
+
+fun gameNumberFromLine(input: String): Int {
+    return input.substringBefore(':').substringAfter("Game ").toInt()
+}
+
+class Game private constructor(
+    val gameNumber: Int?,
+    val cubeSets: List<Triple<Int, Int, Int>>?
+) {
+
+    data class Builder(
+        var gameNumber: Int? = null,
+        var cubeSets: List<Triple<Int, Int, Int>>? = null
+    ) {
+
+        fun gameNumber(gameNumber: Int) = apply { this.gameNumber = gameNumber }
+
+        fun cubeSets(cubeSets: List<Triple<Int, Int, Int>>) = apply { this.cubeSets = cubeSets }
+
+        fun build() = Game(gameNumber, cubeSets)
+    }
 }
